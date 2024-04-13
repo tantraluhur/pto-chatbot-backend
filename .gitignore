@@ -1,0 +1,7 @@
+.vscode
+.env
+node_modules
+dist
+
+# for trying out bun.js
+bun.lockb 
