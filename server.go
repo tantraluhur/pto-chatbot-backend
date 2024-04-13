@@ -1,9 +1,16 @@
 package main
 
 import (
-	"fmt"
+	"chatbot-backend/routes"
+
+	"github.com/gofiber/fiber/v3"
 )
 
 func main() {
-	fmt.Println("PTO Chatbot Backend")
+	app := fiber.New()
+
+	//ROUTER INIT
+	routes.RouteInit(app)
+
+	app.Listen(":8000")
 }
