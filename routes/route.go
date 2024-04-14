@@ -3,7 +3,7 @@ package routes
 import (
 	v1 "chatbot-backend/routes/v1"
 
-	"github.com/gofiber/fiber/v3"
+	"github.com/gofiber/fiber/v2"
 )
 
 func RouteInit(app *fiber.App) {
