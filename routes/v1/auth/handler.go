@@ -31,7 +31,9 @@ func Login(ctx *fiber.Ctx) error {
 		return ctx.Status(http.StatusBadRequest).JSON(responseValidatorError(errValidator, "Invalid input data."))
 	}
 
-	return ctx.Status(200).JSON(fiber.Map{
-		"Message": "Hello from User!",
-	})
+	response := fiber.Map{
+		"Message": "Hello from " + body.Username,
+	}
+
+	return ctx.Status(200).JSON(response)
 }
