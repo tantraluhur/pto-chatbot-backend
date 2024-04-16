@@ -50,16 +50,12 @@ func ParserErrorResponse(errorObj *fiber.Error, message string) *Response {
 }
 
 // HTTPErrorResponse normalizes error responses
-func HTTPErrorResponse(errorObj []*Response, message string) *Response {
-	var errorSlice []*Response
-	for i := 0; i < len(errorObj); i++ {
-		errorSlice = append(errorSlice, errorObj[i])
-	}
+func HTTPErrorResponse(message string) *Response {
 
 	return &Response{
 		Success: false,
 		Message: message,
-		Data:    errorSlice,
+		Data:    nil,
 	}
 }
 

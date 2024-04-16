@@ -6,4 +6,5 @@ import (
 
 func AuthRouter(authRouter fiber.Router) {
 	authRouter.Post("/login", Login)
+	authRouter.Post("/register", Register)
 }
