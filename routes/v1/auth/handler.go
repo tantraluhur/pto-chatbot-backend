@@ -11,6 +11,7 @@ var (
 	validator              = commons.ParseBodyAndValidate
 	responseValidatorError = commons.ValidatorErrorResponse
 	responseParserError    = commons.ParserErrorResponse
+	responseSuccess        = commons.HTTPResponse
 )
 
 type LoginRequest struct {
@@ -35,5 +36,5 @@ func Login(ctx *fiber.Ctx) error {
 		"Message": "Hello from " + body.Username,
 	}
 
-	return ctx.Status(200).JSON(response)
+	return ctx.Status(200).JSON(responseSuccess(response))
 }
