@@ -12,16 +12,16 @@ import (
 )
 
 type TokenDetails struct {
-	Token string
+	Token string `json:"access_token"`
 }
 
 // IssueAccessToken generate access tokens used for auth
-func IssueAccessToken(user models.User) (*TokenDetails, error) {
+func IssueAccessToken(user *models.User) (*TokenDetails, error) {
 
 	expireTime := time.Now().Add(time.Hour).Unix() // 1 hour
 	// Create the JWT claims, which includes the user ID and expiry time
 	claims := jwt.MapClaims{
-		"ID":    user.ID,
+		"id":    user.ID,
 		"email": user.Email,
 		"exp":   expireTime,
 	}
@@ -54,7 +54,7 @@ func Register(data types.RegisterRequest) models.User {
 	return user
 }
 
-func Login(data types.LoginRequest) (*models.User, *fiber.Error) {
+func Login(data types.LoginRequest) (*TokenDetails, *fiber.Error) {
 	var user *models.User
 
 	database.DB.Where("name = ?", data.Username).First(&user) //Check the email is present in the DB
@@ -67,5 +67,11 @@ func Login(data types.LoginRequest) (*models.User, *fiber.Error) {
 		return nil, fiber.NewError(400, "Incorrect username or password.")
 	}
 
-	return user, nil
+	token, err := IssueAccessToken(user)
+
+	if err != nil {
+		fiber.NewError(400, err.Error())
+	}
+
+	return token, nil
 }

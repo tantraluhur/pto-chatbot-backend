@@ -1,7 +1,6 @@
 package auth
 
 import (
-	models "chatbot-backend/model"
 	types "chatbot-backend/routes/v1/auth/types"
 	"chatbot-backend/services/auth"
 	"chatbot-backend/services/commons"
@@ -38,7 +37,6 @@ func Register(ctx *fiber.Ctx) error {
 
 func Login(ctx *fiber.Ctx) error {
 	var body types.LoginRequest
-	var user *models.User
 
 	errParser, errValidator := validator(ctx, &body)
 
@@ -50,10 +48,10 @@ func Login(ctx *fiber.Ctx) error {
 		return ctx.Status(http.StatusBadRequest).JSON(responseValidatorError(errValidator, "Invalid input data."))
 	}
 
-	user, err := auth.Login(body)
+	token, err := auth.Login(body)
 	if err != nil {
 		return ctx.Status(err.Code).JSON(responseError(err.Message))
 	}
 
-	return ctx.Status(200).JSON(responseSuccess(user))
+	return ctx.Status(200).JSON(responseSuccess(token))
 }
