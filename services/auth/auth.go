@@ -6,8 +6,9 @@ import (
 	types "chatbot-backend/routes/v1/auth/types"
 	"time"
 
+	jwt "github.com/form3tech-oss/jwt-go"
 	"github.com/gofiber/fiber/v2"
-	"github.com/golang-jwt/jwt/v5"
+	"github.com/google/uuid"
 	"golang.org/x/crypto/bcrypt"
 )
 
@@ -15,15 +16,24 @@ type TokenDetails struct {
 	Token string `json:"access_token"`
 }
 
+type AccessClaims struct {
+	AccessTokenID string `json:"access_token_id"`
+	ID            int64  `json:"user"`
+	jwt.StandardClaims
+}
+
 // IssueAccessToken generate access tokens used for auth
 func IssueAccessToken(user *models.User) (*TokenDetails, error) {
-
+	tokenUUID := uuid.New().String()
 	expireTime := time.Now().Add(time.Hour).Unix() // 1 hour
 	// Create the JWT claims, which includes the user ID and expiry time
-	claims := jwt.MapClaims{
-		"id":    user.ID,
-		"email": user.Email,
-		"exp":   expireTime,
+	claims := AccessClaims{
+		tokenUUID,
+		user.ID,
+		jwt.StandardClaims{
+			ExpiresAt: expireTime,
+			Issuer:    "chatbot-backend-issuer",
+		},
 	}
 
 	tokenClaims := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
