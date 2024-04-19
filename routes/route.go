@@ -15,4 +15,5 @@ func RouteInit(app *fiber.App) {
 
 	//INIT Router Version 1
 	v1.V1Router(version1)
+
 }

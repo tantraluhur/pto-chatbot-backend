@@ -8,6 +8,7 @@ import (
 
 	jwt "github.com/form3tech-oss/jwt-go"
 	"github.com/gofiber/fiber/v2"
+	jwtUser "github.com/golang-jwt/jwt/v4"
 	"github.com/google/uuid"
 	"golang.org/x/crypto/bcrypt"
 )
@@ -84,4 +85,17 @@ func Login(data types.LoginRequest) (*TokenDetails, *fiber.Error) {
 	}
 
 	return token, nil
+}
+
+func GetLoggedInUser(c *fiber.Ctx) (*models.User, *fiber.Error) {
+	var userObject *models.User
+
+	// Get the user from the context and return it
+	user := c.Locals("user").(*jwtUser.Token)
+	claims := user.Claims.(jwtUser.MapClaims)
+	database.DB.Where("id = ?", claims["user"]).First(&userObject)
+	if userObject.ID == 0 {
+		return nil, fiber.NewError(401, "Username not found.")
+	}
+	return userObject, nil
 }
