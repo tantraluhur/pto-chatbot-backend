@@ -13,18 +13,25 @@ import (
 	"golang.org/x/crypto/bcrypt"
 )
 
-type TokenDetails struct {
-	Token string `json:"access_token"`
-}
-
 type AccessClaims struct {
 	AccessTokenID string `json:"access_token_id"`
 	ID            int64  `json:"user"`
 	jwt.StandardClaims
 }
 
+type RefreshClaims struct {
+	RefreshTokenID string `json:"refresh_token_id"`
+	ID             string `json:"access_token"`
+	jwt.StandardClaims
+}
+
+type LoginResponse struct {
+	AccessToken  string `json:"access_token"`
+	RefreshToken string `json:"refresh_token"`
+}
+
 // IssueAccessToken generate access tokens used for auth
-func IssueAccessToken(user *models.User) (*TokenDetails, error) {
+func IssueAccessToken(user *models.User) (*models.AccessToken, error) {
 	tokenUUID := uuid.New().String()
 	expireTime := time.Now().Add(time.Hour).Unix() // 1 hour
 	// Create the JWT claims, which includes the user ID and expiry time
@@ -44,11 +51,43 @@ func IssueAccessToken(user *models.User) (*TokenDetails, error) {
 		return nil, err
 	}
 
-	TokenDetails := TokenDetails{
-		Token: token,
+	accesToken := models.AccessToken{
+		AccessToken: token,
 	}
 
-	return &TokenDetails, nil
+	database.DB.Create(&accesToken)
+
+	return &accesToken, nil
+}
+
+func IssueRefreshToken(accesToken models.AccessToken) (*models.RefreshToken, error) {
+	expireTime := time.Now().Add((24 * time.Hour) * 14) // 14 days
+	tokenUUID := uuid.New().String()
+
+	// Generate encoded token
+	claims := RefreshClaims{
+		tokenUUID,
+		accesToken.AccessToken,
+		jwt.StandardClaims{
+			ExpiresAt: expireTime.Unix(),
+			Issuer:    "chatbot-backend-issuer",
+		},
+	}
+
+	tokenClaims := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
+	token, err := tokenClaims.SignedString([]byte("secret"))
+
+	if err != nil {
+		return nil, err
+	}
+
+	refreshToken := models.RefreshToken{
+		RefreshToken: token,
+	}
+
+	database.DB.Create(&refreshToken)
+
+	return &refreshToken, nil
 }
 
 func Register(data types.RegisterRequest) models.User {
@@ -65,7 +104,7 @@ func Register(data types.RegisterRequest) models.User {
 	return user
 }
 
-func Login(data types.LoginRequest) (*TokenDetails, *fiber.Error) {
+func Login(data types.LoginRequest) (*LoginResponse, *fiber.Error) {
 	var user *models.User
 
 	database.DB.Where("name = ?", data.Username).First(&user) //Check the email is present in the DB
@@ -78,13 +117,22 @@ func Login(data types.LoginRequest) (*TokenDetails, *fiber.Error) {
 		return nil, fiber.NewError(400, "Incorrect username or password.")
 	}
 
-	token, err := IssueAccessToken(user)
-
-	if err != nil {
-		fiber.NewError(400, err.Error())
+	accessToken, accessTokenErr := IssueAccessToken(user)
+	if accessTokenErr != nil {
+		fiber.NewError(400, accessTokenErr.Error())
 	}
 
-	return token, nil
+	refreshToken, refreshTokenErr := IssueRefreshToken(*accessToken)
+	if refreshTokenErr != nil {
+		fiber.NewError(400, refreshTokenErr.Error())
+	}
+
+	loginResponse := LoginResponse{
+		AccessToken:  accessToken.AccessToken,
+		RefreshToken: refreshToken.RefreshToken,
+	}
+
+	return &loginResponse, nil
 }
 
 func GetLoggedInUser(c *fiber.Ctx) (*models.User, *fiber.Error) {
