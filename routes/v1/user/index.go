@@ -7,5 +7,7 @@ import (
 )
 
 func UserRouter(userRouter fiber.Router) {
-	userRouter.Get("/user", middlewares.RequireLoggedIn(), GetUserHandler)
+	userRouter = userRouter.Group("/user")
+
+	userRouter.Get("/", middlewares.RequireLoggedIn(), GetUserHandler)
 }

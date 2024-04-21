@@ -11,6 +11,8 @@ func Migration() {
 		&models.User{},
 		&models.AccessToken{},
 		&models.RefreshToken{},
+		&models.Message{},
+		&models.ChatSession{},
 	)
 	if err != nil {
 		log.Fatal("Failed to migrate...")

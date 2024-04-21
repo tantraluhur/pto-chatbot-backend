@@ -52,6 +52,7 @@ func IssueAccessToken(user *models.User) (*models.AccessToken, error) {
 	}
 
 	accesToken := models.AccessToken{
+		ID:          tokenUUID,
 		AccessToken: token,
 	}
 
@@ -67,7 +68,7 @@ func IssueRefreshToken(accesToken models.AccessToken) (*models.RefreshToken, err
 	// Generate encoded token
 	claims := RefreshClaims{
 		tokenUUID,
-		accesToken.AccessToken,
+		accesToken.ID,
 		jwt.StandardClaims{
 			ExpiresAt: expireTime.Unix(),
 			Issuer:    "chatbot-backend-issuer",
@@ -82,6 +83,7 @@ func IssueRefreshToken(accesToken models.AccessToken) (*models.RefreshToken, err
 	}
 
 	refreshToken := models.RefreshToken{
+		ID:           tokenUUID,
 		RefreshToken: token,
 	}
 
@@ -107,9 +109,9 @@ func Register(data types.RegisterRequest) models.User {
 func Login(data types.LoginRequest) (*LoginResponse, *fiber.Error) {
 	var user *models.User
 
-	database.DB.Where("name = ?", data.Username).First(&user) //Check the email is present in the DB
+	database.DB.Where("name = ?", data.Username).First(&user)
 
-	if user.ID == 0 { //If the ID return is '0' then there is no such email present in the DB
+	if user.ID == 0 {
 		return nil, fiber.NewError(401, "Username not found.")
 	}
 
@@ -135,15 +137,13 @@ func Login(data types.LoginRequest) (*LoginResponse, *fiber.Error) {
 	return &loginResponse, nil
 }
 
-func GetLoggedInUser(c *fiber.Ctx) (*models.User, *fiber.Error) {
-	var userObject *models.User
-
+func Logout(c *fiber.Ctx) string {
+	var accessToken *models.AccessToken
 	// Get the user from the context and return it
 	user := c.Locals("user").(*jwtUser.Token)
 	claims := user.Claims.(jwtUser.MapClaims)
-	database.DB.Where("id = ?", claims["user"]).First(&userObject)
-	if userObject.ID == 0 {
-		return nil, fiber.NewError(401, "Username not found.")
-	}
-	return userObject, nil
+	database.DB.Where("id = ?", claims["access_token_id"]).First(&accessToken)
+	database.DB.Delete(&accessToken)
+
+	return "Logout success."
 }

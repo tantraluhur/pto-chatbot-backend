@@ -55,3 +55,8 @@ func Login(ctx *fiber.Ctx) error {
 
 	return ctx.Status(200).JSON(responseSuccess(token))
 }
+
+func Logout(ctx *fiber.Ctx) error {
+	logoutMessage := auth.Logout(ctx)
+	return ctx.Status(200).JSON(responseSuccess(logoutMessage))
+}

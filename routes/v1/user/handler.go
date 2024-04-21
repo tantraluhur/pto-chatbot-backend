@@ -1,8 +1,8 @@
 package user
 
 import (
-	user "chatbot-backend/services/auth"
 	"chatbot-backend/services/commons"
+	"chatbot-backend/services/user"
 
 	"github.com/gofiber/fiber/v2"
 )
@@ -14,7 +14,5 @@ func GetUserHandler(ctx *fiber.Ctx) error {
 		return ctx.Status(err.Code).JSON(commons.HTTPErrorResponse(err.Message))
 	}
 
-	return ctx.Status(200).JSON(fiber.Map{
-		"Message": "Hello from " + user.Name,
-	})
+	return ctx.Status(200).JSON(commons.HTTPResponse(user))
 }
