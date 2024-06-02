@@ -33,7 +33,7 @@ type LoginResponse struct {
 // IssueAccessToken generate access tokens used for auth
 func IssueAccessToken(user *models.User) (*models.AccessToken, error) {
 	tokenUUID := uuid.New().String()
-	expireTime := time.Now().Add(time.Hour).Unix() // 1 hour
+	expireTime := time.Now().Add((time.Hour)).Unix() // 1 hour
 	// Create the JWT claims, which includes the user ID and expiry time
 	claims := AccessClaims{
 		tokenUUID,
@@ -142,6 +142,7 @@ func Logout(c *fiber.Ctx) string {
 	// Get the user from the context and return it
 	user := c.Locals("user").(*jwtUser.Token)
 	claims := user.Claims.(jwtUser.MapClaims)
+
 	database.DB.Where("id = ?", claims["access_token_id"]).First(&accessToken)
 	database.DB.Delete(&accessToken)
 

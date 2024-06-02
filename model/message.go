@@ -2,7 +2,8 @@ package models
 
 type Message struct {
 	ID            string `json:"id" gorm:"primaryKey"`
-	Message       string `json:"message"`
+	UserMessage   string `json:"user_message"`
+	BotMessage    string `json:"bot_message"`
 	ChatSessionId string `json:"chat_session_id"`
 	UserID        int64  `json:"user_id"`
 
