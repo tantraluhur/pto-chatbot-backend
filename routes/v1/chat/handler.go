@@ -46,6 +46,28 @@ func CreateChatSession(ctx *fiber.Ctx) error {
 	return ctx.Status(201).JSON(commons.HTTPResponse(chatSession))
 }
 
+// func CreateMessage(ctx *fiber.Ctx) error {
+// 	var body types.SubmitMessageRequest
+// 	user, err := user.GetLoggedInUser(ctx)
+
+// 	if err != nil {
+// 		return ctx.Status(err.Code).JSON(commons.HTTPErrorResponse(err.Message))
+// 	}
+
+// 	errParser, errValidator := commons.ParseBodyAndValidate(ctx, &body)
+// 	if errParser != nil {
+// 		return ctx.Status(400).JSON(commons.ParserErrorResponse(errParser, "Invalid Request."))
+// 	}
+
+// 	if errValidator != nil {
+// 		return ctx.Status(400).JSON(commons.ValidatorErrorResponse(errValidator, "Invalid input data."))
+// 	}
+
+// 	chatSessionId := ctx.Params("id")
+// 	message := chat.CreateMessage(user, chatSessionId, body.Message)
+// 	return ctx.Status(201).JSON(commons.HTTPResponse(message))
+// }
+
 func CreateMessage(ctx *fiber.Ctx) error {
 	var body types.SubmitMessageRequest
 	user, err := user.GetLoggedInUser(ctx)
@@ -64,6 +86,11 @@ func CreateMessage(ctx *fiber.Ctx) error {
 	}
 
 	chatSessionId := ctx.Params("id")
-	message := chat.CreateMessage(user, chatSessionId, body.Message)
+	message, err := chat.CreateMessage(user, chatSessionId, body.Message)
+
+	if err != nil {
+		return ctx.Status(err.Code).JSON(commons.HTTPErrorResponse(err.Message))
+	}
+
 	return ctx.Status(201).JSON(commons.HTTPResponse(message))
 }
