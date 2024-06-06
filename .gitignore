@@ -4,4 +4,5 @@ node_modules
 dist
 
 # for trying out bun.js
-bun.lockb 
+bun.lockb
+server.exe
